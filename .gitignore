@@ -1,0 +1,6 @@
+Vendor
+Config/
+Samples/
+composer.phar
+phpunit.phar
+.idea
