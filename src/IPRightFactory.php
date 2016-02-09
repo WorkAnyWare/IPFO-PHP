@@ -2,16 +2,16 @@
 
 namespace WorkAnyWare\IPFO;
 
-use SNicholson\IPFO\IPRight;
-use SNicholson\IPFO\Parties\Agent;
-use SNicholson\IPFO\Parties\Applicant;
-use SNicholson\IPFO\Parties\Inventor;
-use SNicholson\IPFO\Parties\Party;
-use SNicholson\IPFO\Parties\PartyMember;
-use SNicholson\IPFO\ValueObjects\Citation;
-use SNicholson\IPFO\ValueObjects\Priority;
-use SNicholson\IPFO\ValueObjects\RightType;
-use SNicholson\IPFO\ValueObjects\SearchSource;
+use WorkAnyWare\IPFO\IPRight;
+use WorkAnyWare\IPFO\Parties\Agent;
+use WorkAnyWare\IPFO\Parties\Applicant;
+use WorkAnyWare\IPFO\Parties\Inventor;
+use WorkAnyWare\IPFO\Parties\Party;
+use WorkAnyWare\IPFO\Parties\PartyMember;
+use WorkAnyWare\IPFO\IPRights\Citation;
+use WorkAnyWare\IPFO\IPRights\Priority;
+use WorkAnyWare\IPFO\IPRights\RightType;
+use WorkAnyWare\IPFO\IPRights\SearchSource;
 
 class IPRightFactory
 {

@@ -7,11 +7,11 @@ use GuzzleHttp\Message\RequestInterface;
 use GuzzleHttp\Message\Request as GuzzleRequest;
 use GuzzleHttp\Message\Response;
 use GuzzleHttp\Post\PostFile;
-use SNicholson\IPFO\IPRight;
+use WorkAnyWare\IPFO\IPRight;
 use WorkAnyWare\IPFO\Authentication;
 use WorkAnyWare\IPFO\IPRightFactory;
 
-class ParseRequest extends Request
+class ParseRequest
 {
     /**
      * An array of the documents to send with the request
@@ -67,7 +67,7 @@ class ParseRequest extends Request
     private function assembleRequest()
     {
         return $this->client->post(
-            $this->endPoint . '/api/v1/parse',
+            $this->endPoint . '/parse',
             [
                 'body'    => $this->assembleFilesIntoMultipart(),
                 'headers' => array_merge($this->authentication->toHeaders(), ['Content-Type' => 'multipart/form-data']),
