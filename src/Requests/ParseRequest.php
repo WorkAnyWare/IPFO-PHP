@@ -6,6 +6,10 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Message\RequestInterface;
 use GuzzleHttp\Message\Request as GuzzleRequest;
 use GuzzleHttp\Message\Response;
+use GuzzleHttp\Post\PostFile;
+use SNicholson\IPFO\IPRight;
+use WorkAnyWare\IPFO\Authentication;
+use WorkAnyWare\IPFO\IPRightFactory;
 
 class ParseRequest extends Request
 {
@@ -19,32 +23,41 @@ class ParseRequest extends Request
      * @var string
      */
     private $endPoint;
-    /**
-     * The API Username for IPFO
-     * @var string
-     */
-    private $userName;
-    /**
-     * The Current API key in use
-     * @var string
-     */
-    private $APIKey;
     /** @var Client */
     private $client;
+    /**
+     * The current authentication object
+     * @var Authentication
+     */
+    private $authentication;
 
-    public function __construct(array $documents, $endPoint, $userName, $APIKey)
+    public function __construct(array $documents, $endPoint, Authentication $authentication)
     {
         $this->documents = $documents;
         $this->endPoint  = $endPoint;
-        $this->userName  = $userName;
-        $this->APIKey    = $APIKey;
         $this->client = new Client();
+        $this->authentication = $authentication;
     }
 
+    /**
+     * Returns the IP Rights from the parse request
+     * @return IPRight[]|bool
+     */
     public function getIPRights()
     {
-        $response = $this->assembleRequest();
-        var_dump($response->__toString());
+        try {
+            $response = $this->assembleRequest()->json();
+            if ($response['success']) {
+                $IPRights = [];
+                foreach ($response['result'] as $result) {
+                    $IPRights[] = IPRightFactory::fromArray($result);
+                }
+                return $IPRights;
+            }
+        } catch (\Exception $e) {
+            return false;
+        }
+        return false;
     }
 
     /**
@@ -54,9 +67,10 @@ class ParseRequest extends Request
     private function assembleRequest()
     {
         return $this->client->post(
-            $this->endPoint . '/parse',
+            $this->endPoint . '/api/v1/parse',
             [
-                'body' => $this->assembleFilesIntoMultipart()
+                'body'    => $this->assembleFilesIntoMultipart(),
+                'headers' => array_merge($this->authentication->toHeaders(), ['Content-Type' => 'multipart/form-data']),
             ]
         );
     }
@@ -69,7 +83,7 @@ class ParseRequest extends Request
     {
         $contents = [];
         foreach ($this->documents as $document) {
-            $contents[$document] = file_get_contents($document);
+            $contents[$document] = new PostFile($document, file_get_contents($document));
         }
         return $contents;
     }

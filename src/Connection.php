@@ -11,10 +11,9 @@ use WorkAnyWare\IPFO\Requests\ParseRequest;
  */
 class Connection
 {
-    private $userName;
-    private $APIKey;
 //    private $endPoint = 'https://ipfo.workanyware.co.uk';
     private $endPoint = 'http://localhost:8081';
+    private $authentication;
 
     /**
      * Connection constructor, takes a username and API Key.
@@ -26,8 +25,7 @@ class Connection
      */
     public function __construct($userName, $APIKey)
     {
-        $this->userName = $userName;
-        $this->APIKey = $APIKey;
+        $this->authentication = new Authentication($userName, $APIKey);
     }
 
     /**
@@ -35,13 +33,15 @@ class Connection
      * Takes a single string file name or array of file names
      *
      * @param string|array $files - string or array of file names of documents to convert
+     *
+     * @return bool|\SNicholson\IPFO\IPRight[]
      */
     public function parseDocuments($files)
     {
         if (is_string($files)) {
             $files = [$files];
         }
-        $parseRequest = new ParseRequest($files, $this->endPoint, $this->userName, $this->APIKey);
+        $parseRequest = new ParseRequest($files, $this->endPoint, $this->authentication);
         return $parseRequest->getIPRights();
     }
 
