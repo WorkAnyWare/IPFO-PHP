@@ -2,85 +2,48 @@
 
 namespace WorkAnyWare\IPFO\IPRights;
 
-/**
- * Class Number
- * @package SNicholson\IPFO\ValueObjects
- */
 class Number
 {
-    const PUBLICATION = 'publication';
     const APPLICATION = 'application';
+    const PUBLICATION = 'publication';
+
+    private $rightType;
 
     /**
-     * The Number String, which houses the primary value e.g. GB12345
-     * @var
+     * Number constructor.
+     *
+     * @param $rightNumberType
      */
-    private $numberString;
-    /**
-     * The number type e.g. application
-     * @var
-     */
-    private $type;
+    private function __construct($rightNumberType)
+    {
+        if ($rightNumberType !== Number::APPLICATION && $rightNumberType !== Number::PUBLICATION) {
+            throw new \InvalidArgumentException("Invalid right type of $rightNumberType supplied");
+        }
+        $this->rightType = $rightNumberType;
+    }
 
     /**
-     * Returns a new application number
-     *
-     * @param $number
-     *
      * @return Number
      */
-    public static function application($number)
+    public static function application()
     {
-        return new Number('application', $number);
+        return new Number(Number::APPLICATION);
     }
 
     /**
-     * Returns a new publication number
-     *
-     * @param $number
-     *
      * @return Number
      */
-    public static function publication($number)
+    public static function publication()
     {
-        return new Number('publication', $number);
+        return new Number(Number::PUBLICATION);
     }
 
     /**
-     * A private constructor
-     * @param $type
-     * @param $number
-     */
-    private function __construct($type, $number)
-    {
-        $this->numberString = $number;
-        $this->type = $type;
-    }
-
-    /**
-     * Returns the number type e.g. application
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * Returns the number string e.g GB12345
-     * @return string
-     */
-    public function getNumberString()
-    {
-        return $this->numberString;
-    }
-
-    /**
-     * Returns the number part when utilised as a string
-     * @return string
+     * Returns the IPRight string
+     * @return mixed
      */
     public function __toString()
     {
-        return $this->numberString;
+        return $this->rightType;
     }
 }

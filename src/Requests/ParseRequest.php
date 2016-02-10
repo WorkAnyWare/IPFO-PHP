@@ -70,7 +70,8 @@ class ParseRequest
             $this->endPoint . '/parse',
             [
                 'body'    => $this->assembleFilesIntoMultipart(),
-                'headers' => array_merge($this->authentication->toHeaders(), ['Content-Type' => 'multipart/form-data']),
+                'headers' => ['Content-Type' => 'multipart/form-data'],
+                'auth'    => $this->authentication->toAuthHeaders()
             ]
         );
     }

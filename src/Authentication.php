@@ -24,8 +24,8 @@ class Authentication
      *
      * @return array
      */
-    public function toHeaders()
+    public function toAuthHeaders()
     {
-        return ['ipfo_user' => $this->username, 'ipfo_key' => $this->APIKey];
+        return  [$this->username, $this->APIKey];
     }
 }

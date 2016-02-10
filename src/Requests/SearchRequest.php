@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Message\Response;
 use WorkAnyWare\IPFO\Authentication;
 use WorkAnyWare\IPFO\IPRightFactory;
-use WorkAnyWare\IPFO\IPRights\RightNumberType;
+use WorkAnyWare\IPFO\IPRights\Number;
 use WorkAnyWare\IPFO\IPRights\RightType;
 use WorkAnyWare\IPFO\IPRights\SearchSource;
 
@@ -28,15 +28,16 @@ class SearchRequest
 
     /**
      * Runs a search and returns the output
+     *
      * @param RightType         $rightType
-     * @param RightNumberType   $numberType
+     * @param Number            $numberType
      * @param                   $number
      * @param SearchSource|null $searchSource
      *
      * @return bool|\WorkAnyWare\IPFO\IPRight
      */
     public function search(
-        RightNumberType $numberType,
+        Number $numberType,
         $number,
         RightType $rightType = null,
         SearchSource $searchSource = null
@@ -63,21 +64,21 @@ class SearchRequest
         return $this->client->get(
             $uri,
             [
-                'headers' => array_merge($this->authentication->toHeaders(), ['Content-Type' => 'multipart/form-data']),
+                'auth' => $this->authentication->toAuthHeaders()
             ]
         );
     }
 
     /**
      * @param RightType       $rightType
-     * @param RightNumberType $numberType
+     * @param Number          $numberType
      * @param                 $number
      * @param SearchSource    $searchSource
      *
      * @return string
      */
     private function getSearchURI(
-        RightNumberType $numberType,
+        Number $numberType,
         $number,
         RightType $rightType = null,
         SearchSource $searchSource = null

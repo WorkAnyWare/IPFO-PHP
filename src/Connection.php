@@ -4,7 +4,7 @@ namespace WorkAnyWare\IPFO;
 
 use WorkAnyWare\IPFO\IPRights\RightType;
 use WorkAnyWare\IPFO\IPRights\SearchSource;
-use WorkAnyWare\IPFO\IPRights\RightNumberType;
+use WorkAnyWare\IPFO\IPRights\Number;
 use WorkAnyWare\IPFO\Requests\ParseRequest;
 use WorkAnyWare\IPFO\Requests\SearchRequest;
 
@@ -58,13 +58,13 @@ class Connection
     /**
      * Searches offices for the given Right and returns an IPRight on success
      *
-*@param RightType       $rightType
-     * @param RightNumberType $numberType
+     * @param RightType       $rightType
+     * @param Number          $numberType
      * @param                 $number
      *
      * @return bool|\WorkAnyWare\IPFO\IPRight
      */
-    public function search(RightType $rightType, RightNumberType $numberType, $number)
+    public function search(RightType $rightType, Number $numberType, $number)
     {
         $searchRequest = new SearchRequest($this->endPoint, $this->authentication);
         return $searchRequest->search($numberType, $number, $rightType);
@@ -74,18 +74,57 @@ class Connection
      * Searches a specific office for the given right identified by the number type and number
      *
      * @param SearchSource    $searchSource
-     * @param RightNumberType $numberType
+     * @param Number          $numberType
      * @param                 $number
      *
      * @return bool|\WorkAnyWare\IPFO\IPRight
      */
     public function searchAtOffice(
         SearchSource $searchSource,
-        RightNumberType $numberType,
+        Number $numberType,
         $number
     ) {
         $searchRequest = new SearchRequest($this->endPoint, $this->authentication);
         return $searchRequest->search($numberType, $number, null, $searchSource);
+    }
+
+    /**
+     * Searches the EPO for the given number
+     *
+     * @param Number          $numberType
+     * @param                 $number
+     *
+     * @return bool|IPRight
+     */
+    public function searchEPO(Number $numberType, $number)
+    {
+        return $this->searchAtOffice(SearchSource::EPO(), $numberType, $number);
+    }
+
+    /**
+     * Searches WIPO for the given number
+     *
+*@param Number                $numberType
+     * @param                 $number
+     *
+     * @return bool|IPRight
+     */
+    public function searchWIPO(Number $numberType, $number)
+    {
+        return $this->searchAtOffice(SearchSource::WIPO(), $numberType, $number);
+    }
+
+    /**
+     * Searches USPTO for the given number
+     *
+     * @param Number          $numberType
+     * @param                 $number
+     *
+     * @return bool|IPRight
+     */
+    public function searchUSPTO(Number $numberType, $number)
+    {
+        return $this->searchAtOffice(SearchSource::USPTO(), $numberType, $number);
     }
 
 
