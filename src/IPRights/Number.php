@@ -39,7 +39,7 @@ class Number
     }
 
     /**
-     * Returns the IPRight string
+     * Returns the IPF string
      * @return mixed
      */
     public function __toString()

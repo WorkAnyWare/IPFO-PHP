@@ -12,7 +12,7 @@ use WorkAnyWare\IPFO\IPRights\Priority;
 use WorkAnyWare\IPFO\IPRights\RightType;
 use WorkAnyWare\IPFO\IPRights\SearchSource;
 
-class IPRight implements IPRightInterface
+class IPF implements IPRightInterface
 {
     /** @var RightType  */
     private $rightType;
@@ -27,6 +27,13 @@ class IPRight implements IPRightInterface
     private $grantDate;
     private $grantCountry;
     private $grantNumber;
+
+    private $designatedStates;
+
+    private $status;
+
+    /** @var Party */
+    private $clients;
 
     /** @var Party */
     private $inventors;
@@ -49,8 +56,10 @@ class IPRight implements IPRightInterface
     /** @var Party */
     private $agents;
 
+    private $custom = [];
+
     /**
-     * IPRight constructor.
+     * IPF constructor.
      *
      * @param RightType $rightType
      */
@@ -59,6 +68,7 @@ class IPRight implements IPRightInterface
         $this->applicants = new Party();
         $this->inventors = new Party();
         $this->agents = new Party();
+        $this->clients = new Party();
         if ($rightType == RightType::PATENT) {
             $rightType = RightType::patent();
         }
@@ -413,6 +423,7 @@ class IPRight implements IPRightInterface
         return [
             'type'             => $this->rightType->__toString(),
             'source'           => $this->getSource()->__toString(),
+            'status'           => $this->getStatus(),
             'titles'           => [
                 'english' => $this->getEnglishTitle(),
                 'french'  => $this->getFrenchTitle(),
@@ -436,9 +447,12 @@ class IPRight implements IPRightInterface
             'priorities'       => $this->getPriorities(true),
             'applicants'       => $this->getApplicants(true),
             'inventors'        => $this->getInventors(true),
+            'clients'          => $this->getClients(true),
             'citations'        => $this->getCitations(true),
             'languageOfFiling' => $this->getLanguageOfFiling(),
-            'agents'           => $this->getAgents(true)
+            'agents'           => $this->getAgents(true),
+            'designatedStates' => $this->getDesignatedStates(),
+            'custom'           => $this->getCustom()
         ];
     }
 
@@ -498,5 +512,87 @@ class IPRight implements IPRightInterface
     public function setRightType(RightType $rightType)
     {
         $this->rightType = $rightType;
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getDesignatedStates()
+    {
+        return $this->designatedStates;
+    }
+
+    /**
+     * @param mixed $designatedStates
+     */
+    public function setDesignatedStates($designatedStates)
+    {
+        $this->designatedStates = $designatedStates;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param mixed $status
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+    }
+
+    /**
+     * @param bool $arrayFormat
+     *
+     * @return Party
+     */
+    public function getClients($arrayFormat = false)
+    {
+        if ($arrayFormat) {
+            $arrayToReturn = [];
+            /** @var Inventor $client */
+            foreach ($this->clients->getMembers() as $client) {
+                $arrayToReturn[] = $client->toArray();
+            }
+            return $arrayToReturn;
+        }
+        return $this->inventors;
+    }
+
+    /**
+     * @param Party $clients
+     */
+    public function setClients(Party $clients)
+    {
+        $this->clients = $clients;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCustom()
+    {
+        return $this->custom;
+    }
+
+    /**
+     * @param $fieldName
+     * @param $value
+     *
+     */
+    public function addCustom($fieldName, $value)
+    {
+        $this->custom[$fieldName] = $value;
+    }
+
+    public function toFile($filePath)
+    {
+        return file_put_contents($filePath, json_encode($this->toArray()));
     }
 }

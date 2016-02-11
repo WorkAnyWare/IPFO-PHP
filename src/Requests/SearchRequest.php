@@ -5,7 +5,7 @@ namespace WorkAnyWare\IPFO\Requests;
 use GuzzleHttp\Client;
 use GuzzleHttp\Message\Response;
 use WorkAnyWare\IPFO\Authentication;
-use WorkAnyWare\IPFO\IPRightFactory;
+use WorkAnyWare\IPFO\IPFFactory;
 use WorkAnyWare\IPFO\IPRights\Number;
 use WorkAnyWare\IPFO\IPRights\RightType;
 use WorkAnyWare\IPFO\IPRights\SearchSource;
@@ -34,7 +34,7 @@ class SearchRequest
      * @param                   $number
      * @param SearchSource|null $searchSource
      *
-     * @return bool|\WorkAnyWare\IPFO\IPRight
+     * @return bool|\WorkAnyWare\IPFO\IPF
      */
     public function search(
         Number $numberType,
@@ -46,7 +46,7 @@ class SearchRequest
             $uri = $this->getSearchURI($numberType, $number, $rightType, $searchSource);
             $response = $this->assembleRequest($uri)->json();
             if ($response['success']) {
-                return IPRightFactory::fromArray($response['result']);
+                return IPFFactory::fromArray($response['result']);
             }
         } catch (\Exception $e) {
             echo $e->getMessage();

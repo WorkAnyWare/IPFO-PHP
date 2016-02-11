@@ -2,9 +2,10 @@
 
 namespace WorkAnyWare\IPFO;
 
-use WorkAnyWare\IPFO\IPRight;
+use WorkAnyWare\IPFO\IPF;
 use WorkAnyWare\IPFO\Parties\Agent;
 use WorkAnyWare\IPFO\Parties\Applicant;
+use WorkAnyWare\IPFO\Parties\Client;
 use WorkAnyWare\IPFO\Parties\Inventor;
 use WorkAnyWare\IPFO\Parties\Party;
 use WorkAnyWare\IPFO\Parties\PartyMember;
@@ -13,7 +14,7 @@ use WorkAnyWare\IPFO\IPRights\Priority;
 use WorkAnyWare\IPFO\IPRights\RightType;
 use WorkAnyWare\IPFO\IPRights\SearchSource;
 
-class IPRightFactory
+class IPFFactory
 {
 
     public static function fromJSON($jsonString)
@@ -21,18 +22,21 @@ class IPRightFactory
         return self::fromArray(json_decode($jsonString, true));
     }
     /**
-     * Creates an IPRight From an associative array
+     * Creates an IPF From an associative array
      *
      * @param array $details
      *
-     * @return IPRight
+     * @return IPF
      */
     public static function fromArray(array $details)
     {
-        $IPRight = new IPRight();
+        $IPRight = new IPF();
         $IPRight->setSource(SearchSource::fromString($details['source']));
         $IPRight->setRightType(RightType::fromString($details['type']));
         $IPRight->setLanguageOfFiling($details['languageOfFiling']);
+        $IPRight->setLanguageOfFiling($details['languageOfFiling']);
+        $IPRight->setDesignatedStates($details['designatedStates']);
+        $IPRight->setStatus($details['status']);
 
         //Titles
         $IPRight->setEnglishTitle($details['titles']['english']);
@@ -91,6 +95,20 @@ class IPRightFactory
         }
         $IPRight->setAgents($agentParty);
 
+        //Clients
+        $clientParty = new Party();
+        if (is_array($details['clients'])) {
+            foreach ($details['clients'] as $clientArray) {
+                $clientParty->addMember(self::partyMemberToObject(new Client(), $clientArray));
+            }
+        }
+        $IPRight->setClients($clientParty);
+
+        //Custom fields
+        foreach ($details['custom'] as $name => $value) {
+            $IPRight->addCustom($name, $value);
+        }
+
         //Citations
         if (is_array($details['citations'])) {
             foreach ($details['citations'] as $citationArray) {
@@ -105,6 +123,17 @@ class IPRightFactory
             }
         }
         return $IPRight;
+    }
+
+    /**
+     * Creates an IPF document from a given IPF file
+     * @param $filePath
+     *
+     * @return \WorkAnyWare\IPFO\IPF
+     */
+    public static function fromFile($filePath)
+    {
+        return self::fromJSON(file_get_contents($filePath));
     }
 
     private static function partyMemberToObject(PartyMember $member, $memberArray)
