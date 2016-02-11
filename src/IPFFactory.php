@@ -141,7 +141,7 @@ class IPFFactory
     public static function fromFile($filePath, $password = '')
     {
         $handler = new IPFFileHandler();
-        return $handler->readFrom($filePath, $password);
+        return self::fromJSON($handler->readFrom($filePath, $password));
     }
 
     private static function partyMemberToObject(PartyMember $member, $memberArray)

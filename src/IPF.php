@@ -3,6 +3,8 @@
 namespace WorkAnyWare\IPFO;
 
 use WorkAnyWare\IPFO\IPRightInterface;
+use WorkAnyWare\IPFO\IPRights\File;
+use WorkAnyWare\IPFO\IPRights\FileCollection;
 use WorkAnyWare\IPFO\IPRights\IPFFileHandler;
 use WorkAnyWare\IPFO\Parties\Agent;
 use WorkAnyWare\IPFO\Parties\Applicant;
@@ -59,6 +61,9 @@ class IPF implements IPRightInterface
 
     private $custom = [];
 
+    /** @var FileCollection */
+    private $file = [];
+
     /**
      * IPF constructor.
      *
@@ -74,6 +79,8 @@ class IPF implements IPRightInterface
             $rightType = RightType::patent();
         }
         $this->setRightType($rightType);
+        $this->file = new FileCollection();
+        $this->setSource(SearchSource::fromString('Custom'));
     }
 
     /**
@@ -592,9 +599,26 @@ class IPF implements IPRightInterface
         $this->custom[$fieldName] = $value;
     }
 
+    public function &getFile()
+    {
+        return $this->file;
+    }
+
+    /**
+     * Saves this IPF to the given file path, appends
+     * the.ipf extension if it is missing
+     *
+     * @param        $filePath
+     * @param string $password
+     *
+     * @throws Exceptions\FileAccessException
+     */
     public function toFile($filePath, $password = '')
     {
         $handler = new IPFFileHandler();
+        if (substr($filePath, -4) !== '.ipf') {
+            $filePath .= '.ipf';
+        }
         $handler->writeTo($filePath, $this, $password);
     }
 }
