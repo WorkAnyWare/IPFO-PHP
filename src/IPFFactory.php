@@ -3,6 +3,7 @@
 namespace WorkAnyWare\IPFO;
 
 use WorkAnyWare\IPFO\IPF;
+use WorkAnyWare\IPFO\IPRights\IPFFileHandler;
 use WorkAnyWare\IPFO\Parties\Agent;
 use WorkAnyWare\IPFO\Parties\Applicant;
 use WorkAnyWare\IPFO\Parties\Client;
@@ -127,13 +128,20 @@ class IPFFactory
 
     /**
      * Creates an IPF document from a given IPF file
-     * @param $filePath
+     *
+     * If a password is set the document will be encrypted
+     *
+     * @param        $filePath
+     *
+     * @param string $password
      *
      * @return \WorkAnyWare\IPFO\IPF
+     * @throws Exceptions\FileAccessException
      */
-    public static function fromFile($filePath)
+    public static function fromFile($filePath, $password = '')
     {
-        return self::fromJSON(file_get_contents($filePath));
+        $handler = new IPFFileHandler();
+        return $handler->readFrom($filePath, $password);
     }
 
     private static function partyMemberToObject(PartyMember $member, $memberArray)

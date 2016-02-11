@@ -3,6 +3,7 @@
 namespace WorkAnyWare\IPFO;
 
 use WorkAnyWare\IPFO\IPRightInterface;
+use WorkAnyWare\IPFO\IPRights\IPFFileHandler;
 use WorkAnyWare\IPFO\Parties\Agent;
 use WorkAnyWare\IPFO\Parties\Applicant;
 use WorkAnyWare\IPFO\IPRights\Citation;
@@ -591,8 +592,9 @@ class IPF implements IPRightInterface
         $this->custom[$fieldName] = $value;
     }
 
-    public function toFile($filePath)
+    public function toFile($filePath, $password = '')
     {
-        return file_put_contents($filePath, json_encode($this->toArray()));
+        $handler = new IPFFileHandler();
+        $handler->writeTo($filePath, $this, $password);
     }
 }
