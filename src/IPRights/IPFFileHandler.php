@@ -16,7 +16,7 @@ class IPFFileHandler
     /**
      * @var string
      */
-    private $hashMethod = 'AES-128-CBC';
+    private $defaultEncMethod = 'AES-128-CBC';
     /**
      * @var string
      */
@@ -33,6 +33,10 @@ class IPFFileHandler
      * @var string
      */
     private $defaultPassword = 'ipf';
+
+    private $filesFolderName = 'files/';
+
+    private $currentInitVector = '';
 
     /**
      * IPFFileHandler constructor.
@@ -56,6 +60,7 @@ class IPFFileHandler
             throw new FileAccessException("Unable to write IPF archive");
         }
         $this->zip->addFromString($this->dataFileName, $this->encryptDataFile($this->zip, $IPF, $password));
+        $this->addDocumentsToArchive($IPF, $password);
         $this->zip->close();
     }
 
@@ -78,14 +83,13 @@ class IPFFileHandler
 
 
 
-    public function getFiles($filePath, $password)
+    public function appendDocumentsToIPFObject(IPF &$IPF, $filePath, $password)
     {
         $this->zip = new ZipArchive();
-        if ($this->zip->open($filePath) === true) {
-            $dataFile = $this->getDataFile($this->zip);
-            $images = [];
+        if ($this->zip->open($filePath) !== true) {
+            throw new FileAccessException("Unable to open IPF archive");
         }
-        throw new FileAccessException("Unable to open IPF archive");
+        $this->getDocumentsFromArchive($IPF, $password);
     }
 
     /**
@@ -163,11 +167,12 @@ class IPFFileHandler
         if (!$password) {
             $password = $this->defaultPassword;
         }
-        $size = mcrypt_get_iv_size(MCRYPT_CAST_256, MCRYPT_MODE_CFB);
-        $initVector = mcrypt_create_iv($size, MCRYPT_DEV_RANDOM);
-        $dataString = openssl_encrypt($dataString, $this->hashMethod, $this->hashPassword($password), OPENSSL_RAW_DATA, $initVector);
+        $size                    = mcrypt_get_iv_size(MCRYPT_CAST_256, MCRYPT_MODE_CFB);
+        $initVector              = mcrypt_create_iv($size, MCRYPT_DEV_RANDOM);
+        $this->currentInitVector = $initVector;
+        $dataString              = openssl_encrypt($dataString, $this->defaultEncMethod, $this->hashPassword($password), OPENSSL_RAW_DATA, $initVector);
         $archive->addFromString($this->ivFileName, $initVector);
-        $archive->addFromString($this->encryptionMethodFileName, $this->hashMethod);
+        $archive->addFromString($this->encryptionMethodFileName, $this->defaultEncMethod);
         return $dataString;
     }
 
@@ -179,5 +184,39 @@ class IPFFileHandler
     private function hashPassword($password)
     {
         return hash_hmac('sha256', $password, 'ipf');
+    }
+
+    private function getDocumentsFromArchive(IPF &$IPF, $password)
+    {
+        foreach ($IPF->getDocuments()->getAll() as $docNumber => &$document) {
+            $docContent = $this->zip->getFromName($this->filesFolderName . $docNumber);
+            if (!$docContent) {
+                throw new FileAccessException("Unable to read file " . $document->getFileName() . " from ipf");
+            }
+            $docContent = openssl_decrypt(
+                $docContent,
+                $this->getEncryptionMethod($this->zip),
+                $this->hashPassword($password),
+                OPENSSL_RAW_DATA,
+                $this->getIV($this->zip)
+            );
+            $docContent = gzuncompress($docContent);
+            $document->setContentFromString($docContent);
+        }
+    }
+
+    private function addDocumentsToArchive(IPF $IPF, $password)
+    {
+        foreach ($IPF->getDocuments()->getAll() as $key => $file) {
+            $fileContents = gzcompress($file->getContent(), 1);
+            $fileContents = openssl_encrypt(
+                $fileContents,
+                $this->defaultEncMethod,
+                $this->hashPassword($password),
+                OPENSSL_RAW_DATA,
+                $this->currentInitVector
+            );
+            $this->zip->addFromString($this->filesFolderName . $key,$fileContents);
+        }
     }
 }

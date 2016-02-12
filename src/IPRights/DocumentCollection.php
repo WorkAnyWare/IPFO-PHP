@@ -2,21 +2,21 @@
 
 namespace WorkAnyWare\IPFO\IPRights;
 
-class FileCollection
+class DocumentCollection
 {
-    /** @var File[] */
+    /** @var Document[] */
     private $images = [];
 
-    public function add(File $image)
+    public function add(Document $image)
     {
-        $this->images = $image;
+        $this->images[] = $image;
     }
 
-    public function toArray()
+    public function toArray($includeDocumentContent)
     {
         $return = [];
         foreach ($this->images as $image) {
-            $return[] = $image->toArray();
+            $return[] = $image->toArray($includeDocumentContent);
         }
         return $return;
     }

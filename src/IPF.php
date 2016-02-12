@@ -3,8 +3,8 @@
 namespace WorkAnyWare\IPFO;
 
 use WorkAnyWare\IPFO\IPRightInterface;
-use WorkAnyWare\IPFO\IPRights\File;
-use WorkAnyWare\IPFO\IPRights\FileCollection;
+use WorkAnyWare\IPFO\IPRights\Document;
+use WorkAnyWare\IPFO\IPRights\DocumentCollection;
 use WorkAnyWare\IPFO\IPRights\IPFFileHandler;
 use WorkAnyWare\IPFO\Parties\Agent;
 use WorkAnyWare\IPFO\Parties\Applicant;
@@ -61,8 +61,8 @@ class IPF implements IPRightInterface
 
     private $custom = [];
 
-    /** @var FileCollection */
-    private $file = [];
+    /** @var DocumentCollection */
+    private $documents = [];
 
     /**
      * IPF constructor.
@@ -79,7 +79,7 @@ class IPF implements IPRightInterface
             $rightType = RightType::patent();
         }
         $this->setRightType($rightType);
-        $this->file = new FileCollection();
+        $this->documents = new DocumentCollection();
         $this->setSource(SearchSource::fromString('Custom'));
     }
 
@@ -426,7 +426,7 @@ class IPF implements IPRightInterface
         $this->priorities[] = $priority;
     }
 
-    public function toArray()
+    public function toArray($includeDocumentContent = false)
     {
         return [
             'type'             => $this->rightType->__toString(),
@@ -461,7 +461,7 @@ class IPF implements IPRightInterface
             'agents'           => $this->getAgents(true),
             'designatedStates' => $this->getDesignatedStates(),
             'custom'           => $this->getCustom(),
-            'documents'        => $this->getFiles()->toArray()
+            'documents'        => $this->getDocuments()->toArray($includeDocumentContent)
         ];
     }
 
@@ -600,9 +600,12 @@ class IPF implements IPRightInterface
         $this->custom[$fieldName] = $value;
     }
 
-    public function &getFiles()
+    /**
+     * @return DocumentCollection
+     */
+    public function &getDocuments()
     {
-        return $this->file;
+        return $this->documents;
     }
 
     /**

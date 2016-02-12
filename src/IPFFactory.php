@@ -3,6 +3,7 @@
 namespace WorkAnyWare\IPFO;
 
 use WorkAnyWare\IPFO\IPF;
+use WorkAnyWare\IPFO\IPRights\Document;
 use WorkAnyWare\IPFO\IPRights\IPFFileHandler;
 use WorkAnyWare\IPFO\Parties\Agent;
 use WorkAnyWare\IPFO\Parties\Applicant;
@@ -71,7 +72,7 @@ class IPFFactory
 
         //Applicants
         $applicantParty = new Party();
-        if (is_array($details['applicants'])) {
+        if (isset($details['applicants']) && is_array($details['applicants'])) {
             foreach ($details['applicants'] as $applicantArray) {
                 $applicantParty->addMember(self::partyMemberToObject(new Applicant(), $applicantArray));
             }
@@ -80,7 +81,7 @@ class IPFFactory
 
         //Inventors
         $inventorParty = new Party();
-        if (is_array($details['inventors'])) {
+        if (isset($details['inventors']) && is_array($details['inventors'])) {
             foreach ($details['inventors'] as $inventorArray) {
                 $inventorParty->addMember(self::partyMemberToObject(new Inventor(), $inventorArray));
             }
@@ -89,7 +90,7 @@ class IPFFactory
 
         //Agents
         $agentParty = new Party();
-        if (is_array($details['agents'])) {
+        if (isset($details['agents']) && is_array($details['agents'])) {
             foreach ($details['agents'] as $agentArray) {
                 $agentParty->addMember(self::partyMemberToObject(new Agent(), $agentArray));
             }
@@ -98,20 +99,34 @@ class IPFFactory
 
         //Clients
         $clientParty = new Party();
-        if (is_array($details['clients'])) {
+        if (isset($details['clients']) && is_array($details['clients'])) {
             foreach ($details['clients'] as $clientArray) {
                 $clientParty->addMember(self::partyMemberToObject(new Client(), $clientArray));
             }
         }
         $IPRight->setClients($clientParty);
 
+        //Documents
+        if (isset($details['documents']) && is_array($details['documents'])) {
+            foreach ($details['documents'] as $document) {
+                $doc = new Document();
+                $doc->setFileName($document['filename']);
+                $doc->setDescription($document['description']);
+                if (isset($document['content'])) {
+                    $doc->setContentFromString($document['content']);
+                }
+                $IPRight->getDocuments()->add($doc);
+            }
+        }
         //Custom fields
-        foreach ($details['custom'] as $name => $value) {
-            $IPRight->addCustom($name, $value);
+        if (isset($details['custom']) && is_array($details['custom'])) {
+            foreach ($details['custom'] as $name => $value) {
+                $IPRight->addCustom($name, $value);
+            }
         }
 
         //Citations
-        if (is_array($details['citations'])) {
+        if (isset($details['citations']) && is_array($details['citations'])) {
             foreach ($details['citations'] as $citationArray) {
                 if ($citationArray['type'] == Citation::PATENT) {
                     $citation = Citation::patent($citationArray['number'], $citationArray['country'],
@@ -141,7 +156,9 @@ class IPFFactory
     public static function fromFile($filePath, $password = '')
     {
         $handler = new IPFFileHandler();
-        return self::fromJSON($handler->readFrom($filePath, $password));
+        $IPRight = self::fromJSON($handler->readFrom($filePath, $password));
+        $handler->appendDocumentsToIPFObject($IPRight, $filePath, $password);
+        return $IPRight;
     }
 
     private static function partyMemberToObject(PartyMember $member, $memberArray)

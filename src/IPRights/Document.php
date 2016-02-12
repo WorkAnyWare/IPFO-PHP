@@ -3,7 +3,7 @@
 namespace WorkAnyWare\IPFO\IPRights;
 
 
-class File
+class Document
 {
     private $content;
     private $description;
@@ -26,11 +26,13 @@ class File
     }
 
     /**
-     * @param $filePath
+     * @param        $filePath
+     * @param string $description
      */
-    public function fromFile($filePath)
+    public function fromFile($filePath, $description = '')
     {
         $this->content = file_get_contents($filePath);
+        $this->setDescription($description);
         $this->fileName = basename($filePath);
     }
 
@@ -65,10 +67,16 @@ class File
         $this->description = $description;
     }
 
-    public function toArray()
+    public function toArray($includeDocumentContent)
     {
+        if ($includeDocumentContent) {
+            return [
+                'content'     => $this->getContent(),
+                'description' => $this->getDescription(),
+                'filename'    => $this->getFileName(),
+            ];
+        }
         return [
-            'content'     => $this->getContent(),
             'description' => $this->getDescription(),
             'filename'    => $this->getFileName(),
         ];
