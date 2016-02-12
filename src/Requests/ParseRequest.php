@@ -7,7 +7,7 @@ use GuzzleHttp\Message\RequestInterface;
 use GuzzleHttp\Message\Request as GuzzleRequest;
 use GuzzleHttp\Message\Response;
 use GuzzleHttp\Post\PostFile;
-use WorkAnyWare\IPFO\IPF;
+use WorkAnyWare\IPFO\IPRight;
 use WorkAnyWare\IPFO\Authentication;
 use WorkAnyWare\IPFO\IPFFactory;
 
@@ -41,7 +41,7 @@ class ParseRequest
 
     /**
      * Returns the IP Rights from the parse request
-     * @return IPF[]|bool
+     * @return IPRight[]|bool
      */
     public function getIPRights()
     {
@@ -50,7 +50,7 @@ class ParseRequest
             if ($response['success']) {
                 $IPRights = [];
                 foreach ($response['result'] as $result) {
-                    $IPRights[] = IPFFactory::fromArray($result);
+                    $IPRights[] = IPFFactory::rightFromArray($result);
                 }
                 return $IPRights;
             }

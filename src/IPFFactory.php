@@ -2,7 +2,7 @@
 
 namespace WorkAnyWare\IPFO;
 
-use WorkAnyWare\IPFO\IPF;
+use WorkAnyWare\IPFO\IPRight;
 use WorkAnyWare\IPFO\IPRights\Document;
 use WorkAnyWare\IPFO\IPRights\IPFFileHandler;
 use WorkAnyWare\IPFO\Parties\Agent;
@@ -19,20 +19,20 @@ use WorkAnyWare\IPFO\IPRights\SearchSource;
 class IPFFactory
 {
 
-    public static function fromJSON($jsonString)
+    public static function rightFromJSON($jsonString)
     {
-        return self::fromArray(json_decode($jsonString, true));
+        return self::rightFromArray(json_decode($jsonString, true));
     }
     /**
-     * Creates an IPF From an associative array
+     * Creates an IPRight From an associative array
      *
      * @param array $details
      *
-     * @return IPF
+     * @return IPRight
      */
-    public static function fromArray(array $details)
+    public static function rightFromArray(array $details)
     {
-        $IPRight = new IPF();
+        $IPRight = new IPRight();
         $IPRight->setSource(SearchSource::fromString($details['source']));
         $IPRight->setRightType(RightType::fromString($details['type']));
         $IPRight->setLanguageOfFiling($details['languageOfFiling']);
@@ -115,7 +115,7 @@ class IPFFactory
                 if (isset($document['content'])) {
                     $doc->setContentFromString($document['content']);
                 }
-                $IPRight->getDocuments()->add($doc);
+                $IPRight->documents()->add($doc);
             }
         }
         //Custom fields
@@ -142,7 +142,7 @@ class IPFFactory
     }
 
     /**
-     * Creates an IPF document from a given IPF file
+     * Creates an IPRight document from a given IPRight file
      *
      * If a password is set the document will be encrypted
      *
@@ -150,15 +150,22 @@ class IPFFactory
      *
      * @param string $password
      *
-     * @return \WorkAnyWare\IPFO\IPF
+     * @return IPF
      * @throws Exceptions\FileAccessException
      */
     public static function fromFile($filePath, $password = '')
     {
         $handler = new IPFFileHandler();
-        $IPRight = self::fromJSON($handler->readFrom($filePath, $password));
-        $handler->appendDocumentsToIPFObject($IPRight, $filePath, $password);
-        return $IPRight;
+        $IPF = new IPF();
+        //Get the data array from the IPF file
+        $dataArray = json_decode($handler->readFrom($filePath, $password), true);
+
+        foreach ($dataArray as $rightNumber => $right) {
+            $IPRight = self::rightFromArray($right);
+            $handler->appendDocumentsToIPFObject($IPRight, $rightNumber, $filePath, $password);
+            $IPF->add($IPRight);
+        }
+        return $IPF;
     }
 
     private static function partyMemberToObject(PartyMember $member, $memberArray)

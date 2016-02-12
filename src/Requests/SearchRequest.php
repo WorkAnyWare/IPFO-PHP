@@ -34,7 +34,7 @@ class SearchRequest
      * @param                   $number
      * @param SearchSource|null $searchSource
      *
-     * @return bool|\WorkAnyWare\IPFO\IPF
+     * @return bool|\WorkAnyWare\IPFO\IPRight
      */
     public function search(
         Number $numberType,
@@ -46,7 +46,7 @@ class SearchRequest
             $uri = $this->getSearchURI($numberType, $number, $rightType, $searchSource);
             $response = $this->assembleRequest($uri)->json();
             if ($response['success']) {
-                return IPFFactory::fromArray($response['result']);
+                return IPFFactory::rightFromArray($response['result']);
             }
         } catch (\Exception $e) {
             echo $e->getMessage();

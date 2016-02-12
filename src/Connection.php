@@ -34,14 +34,14 @@ class Connection
     }
 
     /**
-     * Attempts to parse the given documents into IPF objects.
+     * Attempts to parse the given documents into IPRight objects.
      * Takes a single string file name or array of file names
      *
      * @param string|array $files - string or array of file names of documents to convert
      *
      * @throws \InvalidArgumentException When an invalid list of files is provided
      *
-     * @return bool|\WorkAnyWare\IPFO\IPF[]
+     * @return bool|\WorkAnyWare\IPFO\IPRight[]
      */
     public function parseDocuments($files)
     {
@@ -56,13 +56,13 @@ class Connection
     }
 
     /**
-     * Searches offices for the given Right and returns an IPF on success
+     * Searches offices for the given Right and returns an IPRight on success
      *
      * @param RightType       $rightType
      * @param Number          $numberType
      * @param                 $number
      *
-     * @return bool|\WorkAnyWare\IPFO\IPF
+     * @return bool|\WorkAnyWare\IPFO\IPRight
      */
     public function search(RightType $rightType, Number $numberType, $number)
     {
@@ -77,7 +77,7 @@ class Connection
      * @param Number          $numberType
      * @param                 $number
      *
-     * @return bool|\WorkAnyWare\IPFO\IPF
+     * @return bool|\WorkAnyWare\IPFO\IPRight
      */
     public function searchAtOffice(
         SearchSource $searchSource,
@@ -94,7 +94,7 @@ class Connection
      * @param Number          $numberType
      * @param                 $number
      *
-     * @return bool|IPF
+     * @return bool|IPRight
      */
     public function searchEPO(Number $numberType, $number)
     {
@@ -107,7 +107,7 @@ class Connection
 *@param Number                $numberType
      * @param                 $number
      *
-     * @return bool|IPF
+     * @return bool|IPRight
      */
     public function searchWIPO(Number $numberType, $number)
     {
@@ -120,7 +120,7 @@ class Connection
      * @param Number          $numberType
      * @param                 $number
      *
-     * @return bool|IPF
+     * @return bool|IPRight
      */
     public function searchUSPTO(Number $numberType, $number)
     {

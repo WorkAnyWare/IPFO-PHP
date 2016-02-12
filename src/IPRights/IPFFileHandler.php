@@ -3,7 +3,7 @@
 namespace WorkAnyWare\IPFO\IPRights;
 
 use WorkAnyWare\IPFO\Exceptions\FileAccessException;
-use WorkAnyWare\IPFO\IPF;
+use WorkAnyWare\IPFO\IPRight;
 use ZipArchive;
 
 /**
@@ -34,7 +34,7 @@ class IPFFileHandler
      */
     private $defaultPassword = 'ipf';
 
-    private $filesFolderName = 'files/';
+    private $filesFolderName = 'files';
 
     private $currentInitVector = '';
 
@@ -48,19 +48,28 @@ class IPFFileHandler
 
     /**
      * @param     $filePath
-     * @param IPF $IPF
+     * @param IPRight[] $IPRights
      * @param     $password
      *
      * @throws FileAccessException
      */
-    public function writeTo($filePath, IPF $IPF, $password)
+    public function writeTo($filePath, array $IPRights, $password)
     {
-        $this->zip = new ZipArchive();
+        $this->zip = new ZipArchive(ZipArchive::OVERWRITE);
+        //Open the archive for writing
         if ($this->zip->open($filePath, ZipArchive::CREATE) !== true) {
-            throw new FileAccessException("Unable to write IPF archive");
+            throw new FileAccessException("Unable to write IPRight archive");
         }
-        $this->zip->addFromString($this->dataFileName, $this->encryptDataFile($this->zip, $IPF, $password));
-        $this->addDocumentsToArchive($IPF, $password);
+        //Add the combined data file
+        $this->zip->addFromString(
+            $this->dataFileName,
+            $this->encryptDataFile(
+                $this->zip,
+                $this->IPRightsToString($IPRights),
+                $password
+            )
+        );
+        $this->addDocumentsToArchive($IPRights, $password);
         $this->zip->close();
     }
 
@@ -78,18 +87,18 @@ class IPFFileHandler
             $dataFile = $this->getDataFile($this->zip);
             return $this->decryptDataFile($dataFile, $password);
         }
-        throw new FileAccessException("Unable to open IPF archive");
+        throw new FileAccessException("Unable to open IPRight archive");
     }
 
 
 
-    public function appendDocumentsToIPFObject(IPF &$IPF, $filePath, $password)
+    public function appendDocumentsToIPFObject(IPRight &$IPF, $rightNumber, $filePath, $password)
     {
         $this->zip = new ZipArchive();
         if ($this->zip->open($filePath) !== true) {
-            throw new FileAccessException("Unable to open IPF archive");
+            throw new FileAccessException("Unable to open IPRight archive");
         }
-        $this->getDocumentsFromArchive($IPF, $password);
+        $this->getDocumentsFromArchive($IPF, $password, $rightNumber);
     }
 
     /**
@@ -156,14 +165,14 @@ class IPFFileHandler
 
     /**
      * @param ZipArchive $archive
-     * @param IPF        $IPF
+     * @param            $dataFileString
      * @param            $password
      *
      * @return string
      */
-    private function encryptDataFile(ZipArchive $archive, IPF $IPF, $password)
+    private function encryptDataFile(ZipArchive $archive, $dataFileString, $password)
     {
-        $dataString = json_encode($IPF->toArray());
+        $dataString = $dataFileString;
         if (!$password) {
             $password = $this->defaultPassword;
         }
@@ -186,10 +195,10 @@ class IPFFileHandler
         return hash_hmac('sha256', $password, 'ipf');
     }
 
-    private function getDocumentsFromArchive(IPF &$IPF, $password)
+    private function getDocumentsFromArchive(IPRight &$IPF, $password, $rightNumber)
     {
-        foreach ($IPF->getDocuments()->getAll() as $docNumber => &$document) {
-            $docContent = $this->zip->getFromName($this->filesFolderName . $docNumber);
+        foreach ($IPF->documents()->getAll() as $docNumber => &$document) {
+            $docContent = $this->zip->getFromName($this->getRightFileLocation($rightNumber, $docNumber));
             if (!$docContent) {
                 throw new FileAccessException("Unable to read file " . $document->getFileName() . " from ipf");
             }
@@ -205,18 +214,43 @@ class IPFFileHandler
         }
     }
 
-    private function addDocumentsToArchive(IPF $IPF, $password)
+    /**
+     * @param IPRight[] $IPRights
+     * @param       $password
+     */
+    private function addDocumentsToArchive(array $IPRights, $password)
     {
-        foreach ($IPF->getDocuments()->getAll() as $key => $file) {
-            $fileContents = gzcompress($file->getContent(), 1);
-            $fileContents = openssl_encrypt(
-                $fileContents,
-                $this->defaultEncMethod,
-                $this->hashPassword($password),
-                OPENSSL_RAW_DATA,
-                $this->currentInitVector
-            );
-            $this->zip->addFromString($this->filesFolderName . $key,$fileContents);
+        foreach ($IPRights as $rightNumber => $IPRight) {
+            foreach ($IPRight->documents()->getAll() as $docNumber => $file) {
+                $fileContents = gzcompress($file->getContent(), 1);
+                $fileContents = openssl_encrypt(
+                    $fileContents,
+                    $this->defaultEncMethod,
+                    $this->hashPassword($password),
+                    OPENSSL_RAW_DATA,
+                    $this->currentInitVector
+                );
+                $this->zip->addFromString($this->getRightFileLocation($rightNumber, $docNumber),$fileContents);
+            }
         }
+    }
+
+    private function getRightFileLocation($rightNumber, $docNumber)
+    {
+        return $this->filesFolderName . '/' . $rightNumber . '/' . $docNumber;
+    }
+
+    /**
+     * @param IPRight[] $IPRights
+     *
+     * @return string
+     */
+    private function IPRightsToString(array $IPRights)
+    {
+        $data = [];
+        foreach ($IPRights as $right) {
+            $data[] = $right->toArray();
+        }
+        return json_encode($data);
     }
 }
