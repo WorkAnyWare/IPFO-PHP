@@ -16,7 +16,7 @@ class IPFFileHandler
     /**
      * @var string
      */
-    private $defaultEncMethod = 'AES-128-CBC';
+    private $defaultEncMethod = 'AES-256-CBC';
     /**
      * @var string
      */

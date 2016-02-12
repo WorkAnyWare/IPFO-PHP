@@ -43,9 +43,7 @@ class IPRight implements IPRightInterface
     /** @var Party */
     private $applicants;
 
-    private $englishTitle;
-    private $frenchTitle;
-    private $germanTitle;
+    private $titles;
 
     private $citations = [];
 
@@ -295,12 +293,17 @@ class IPRight implements IPRightInterface
         $this->inventors = $inventors;
     }
 
+    public function addTitle($name, $value)
+    {
+        $this->titles[$name] = $value;
+    }
+
     /**
      * @return mixed
      */
     public function getEnglishTitle()
     {
-        return $this->englishTitle;
+        return isset($this->titles['english']) ? $this->titles['english'] : '';
     }
 
     /**
@@ -308,7 +311,7 @@ class IPRight implements IPRightInterface
      */
     public function setEnglishTitle($englishTitle)
     {
-        $this->englishTitle = $englishTitle;
+        $this->titles['english'] = $englishTitle;
     }
 
     /**
@@ -316,7 +319,7 @@ class IPRight implements IPRightInterface
      */
     public function getFrenchTitle()
     {
-        return $this->frenchTitle;
+        return isset($this->titles['french']) ? $this->titles['french'] : '';
     }
 
     /**
@@ -324,7 +327,7 @@ class IPRight implements IPRightInterface
      */
     public function setFrenchTitle($frenchTitle)
     {
-        $this->frenchTitle = $frenchTitle;
+        $this->titles['french'] = $frenchTitle;
     }
 
     /**
@@ -332,7 +335,7 @@ class IPRight implements IPRightInterface
      */
     public function getGermanTitle()
     {
-        return $this->germanTitle;
+        return isset($this->titles['german']) ? $this->titles['german'] : '';
     }
 
     /**
@@ -340,7 +343,7 @@ class IPRight implements IPRightInterface
      */
     public function setGermanTitle($germanTitle)
     {
-        $this->germanTitle = $germanTitle;
+        $this->titles['german'] = $germanTitle;
     }
 
     /**
@@ -432,11 +435,7 @@ class IPRight implements IPRightInterface
             'type'             => $this->rightType->__toString(),
             'source'           => $this->getSource()->__toString(),
             'status'           => $this->getStatus(),
-            'titles'           => [
-                'english' => $this->getEnglishTitle(),
-                'french'  => $this->getFrenchTitle(),
-                'german'  => $this->getGermanTitle()
-            ],
+            'titles'           => $this->titles,
             'application'      => [
                 'country' => $this->getApplicationCountry(),
                 'date'    => $this->getApplicationDate(),
