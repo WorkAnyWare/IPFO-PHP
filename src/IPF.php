@@ -460,7 +460,8 @@ class IPF implements IPRightInterface
             'languageOfFiling' => $this->getLanguageOfFiling(),
             'agents'           => $this->getAgents(true),
             'designatedStates' => $this->getDesignatedStates(),
-            'custom'           => $this->getCustom()
+            'custom'           => $this->getCustom(),
+            'documents'        => $this->getFiles()->toArray()
         ];
     }
 
@@ -599,7 +600,7 @@ class IPF implements IPRightInterface
         $this->custom[$fieldName] = $value;
     }
 
-    public function &getFile()
+    public function &getFiles()
     {
         return $this->file;
     }

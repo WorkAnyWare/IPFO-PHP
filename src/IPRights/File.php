@@ -28,9 +28,10 @@ class File
     /**
      * @param $filePath
      */
-    public function setContentFromFile($filePath)
+    public function fromFile($filePath)
     {
         $this->content = file_get_contents($filePath);
+        $this->fileName = basename($filePath);
     }
 
     /**

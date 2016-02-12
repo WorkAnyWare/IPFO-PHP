@@ -5,9 +5,9 @@ namespace WorkAnyWare\IPFO\IPRights;
 class FileCollection
 {
     /** @var File[] */
-    private $images;
+    private $images = [];
 
-    public function addFromString(File $image)
+    public function add(File $image)
     {
         $this->images = $image;
     }
